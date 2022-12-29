@@ -43,3 +43,35 @@ info:
     version: '@project.version@'
     spring-cloud-version: '@spring-cloud.version@'
     spring-boot-version: '@project.parent.version@'
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        automatic-transition-from-open-to-half-open-enabled: true
+        failure-rate-threshold: 50
+        permitted-number-of-calls-in-half-open-state: 2
+        sliding-window-size: 2
+        wait-duration-in-open-state: 1000
+        sliding-window-type: COUNT_BASED
+    instances:
+      user-service:
+        base-config: default
+        wait-duration-in-open-state: 15000
+      task-service:
+        base-config: default
+        wait-duration-in-open-state: 20000
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 200
+    instances:
+      user-service:
+        base-config: default
+  ratelimiter:
+    instances:
+      test:
+        timeout-duration: 5000
+        limit-refresh-period: 5000
+        limit-for-period: 1
