@@ -13,6 +13,8 @@ import com.cydeo.service.ProjectService;
 import com.cydeo.service.UserClientService;
 import com.cydeo.util.MapperUtil;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @RateLimiter(name = "test", fallbackMethod = "testingRateLimiter")
     public ProjectDTO getByProjectCode(String code) {
         Project project = projectRepository.findByProjectCode(code);
         return mapperUtil.convert(project, new ProjectDTO());
@@ -112,6 +115,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @CircuitBreaker(name = "user-service", fallbackMethod = "userServiceFallBack")
+    @Retry(name= "user-service", fallbackMethod = "userServiceRetryFallBack")
     public List<ProjectDTO> listAllProjectDetails(String userName) throws ProjectServiceException {
 
         UserResponseDTO userResponseDto = userClientService.getUserDTOByUserName(userName);
@@ -138,6 +142,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     public List<ProjectDTO> userServiceFallBack(String userName, Exception e) {
+        logger.error("exception{}", e.getMessage());
+        return new ArrayList<>();
+    }
+
+    public List<ProjectDTO> userServiceRetryFallBack(String userName, Exception e) {
         logger.error("exception{}", e.getMessage());
         return new ArrayList<>();
     }
