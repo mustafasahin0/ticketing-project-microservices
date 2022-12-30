@@ -80,3 +80,17 @@
 #        timeout-duration: 5000
 #        limit-refresh-period: 5000
 #        limit-for-period: 1
+
+spring:
+  application:
+    name: project-service
+  profile:
+    active: project_service
+  cloud:
+    config:
+      name: config-client
+      uri: http://configserver:8888
+      fail-fast: true
+      retry:
+        max-attempts: 200
+        max-interval: 10000
